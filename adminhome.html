@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scam Alert System - Admin</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #1a1a1a;
+      color: #e0e0e0;
+      overflow-x: hidden;
+    }
+    header {
+      text-align: center;
+      padding: 40px 20px;
+      background: linear-gradient(145deg, #6a6e73, #44484d);
+      color: #fff;
+      border-radius: 15px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      margin-bottom: 30px;
+      position: relative;
+    }
+    h1 {
+      font-size: 3rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+    }
+    #search-box {
+      margin-top: 20px;
+      padding: 10px;
+      border-radius: 5px;
+      border: none;
+      width: 80%;
+      max-width: 500px;
+      font-size: 1rem;
+      background-color: #2e2e2e;
+      color: #e0e0e0;
+      transition: background-color 0.3s;
+    }
+    #search-box:focus {
+      background-color: #3a3a3a;
+    }
+    .logout-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      background-color: #FF5252;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .logout-btn:hover {
+      background-color: #e04848;
+    }
+    .filters {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .filter-btn {
+      padding: 10px 20px;
+      background-color: #2e2e2e;
+      color: #cccccc;
+      border: none;
+      border-radius: 20px;
+      font-size: 1rem;
+      margin: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.2s ease, color 0.3s;
+    }
+    .filter-btn:hover {
+      background-color: #FF5252;
+      transform: scale(1.1);
+    }
+    .filter-btn.active {
+      background-color: #FF5252;
+      color: #fff;
+    }
+    .scams-list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      padding: 0 10px;
+      margin-bottom: 30px;
+    }
+    .scam {
+      background: #2e2e2e;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      transition: transform 0.3s ease, background-color 0.3s;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .scam:hover {
+      background-color: #3a3a3a;
+      transform: scale(1.02);
+    }
+    .scam-title {
+      font-size: 1.6rem;
+      font-weight: 500;
+      color: #e0e0e0;
+    }
+    .scam-date {
+      font-size: 1rem;
+      color: #cccccc;
+      text-align: right;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.8);
+      padding-top: 60px;
+    }
+    .modal-content {
+      background-color: #333333;
+      margin: 5% auto;
+      padding: 25px;
+      border-radius: 10px;
+      width: 80%;
+      max-width: 800px;
+      position: relative;
+      line-height: 1.5;
+    }
+    .modal-content h2 {
+      font-size: 2rem;
+      margin-bottom: 20px;
+      color: #e0e0e0;
+    }
+    .modal-content h3 {
+      font-size: 1.4rem;
+      margin: 20px 0 10px;
+      color: #FF5252;
+    }
+    .modal-content p {
+      margin: 10px 0;
+      color: #e0e0e0;
+    }
+    .modal-content ul {
+      margin-left: 20px;
+      color: #e0e0e0;
+    }
+    .close {
+      color: #e0e0e0;
+      font-size: 28px;
+      font-weight: bold;
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      cursor: pointer;
+    }
+    .close:hover,
+    .close:focus {
+      color: #FF5252;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    footer {
+      text-align: center;
+      background-color: #1a1a1a;
+      padding: 20px;
+      color: #bbbbbb;
+    }
+    .admin-controls {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: #2e2e2e;
+      border-radius: 15px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+    .admin-controls h2 {
+      margin-bottom: 20px;
+      color: #e0e0e0;
+    }
+    .admin-controls button,
+    .admin-controls select,
+    .admin-controls input[type="text"],
+    .admin-controls input[type="date"],
+    .admin-controls textarea {
+      margin: 10px;
+      padding: 10px;
+      border-radius: 5px;
+      border: none;
+      background-color: #3a3a3a;
+      color: #e0e0e0;
+      font-size: 1rem;
+      width: 80%;
+      max-width: 500px;
+    }
+    .admin-controls input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+    }
+    .admin-controls button {
+      background-color: #FF5252;
+      cursor: pointer;
+      transition: background-color 0.3s, transform 0.2s ease, color 0.3s;
+    }
+    .admin-controls button:hover {
+      background-color: #e04848;
+      transform: scale(1.05);
+    }
+    .admin-form-group {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      margin-bottom: 15px;
+      width: 80%;
+      max-width: 500px;
+    }
+    .admin-form-group label {
+      text-align: left;
+      margin-bottom: 5px;
+      color: #cccccc;
+    }
+    @media screen and (max-width: 768px) {
+      body {
+        font-size: 14px;
+        margin: 10px;
+      }
+      header {
+        padding: 20px 10px;
+      }
+      .scam-title {
+        font-size: 1.4rem;
+      }
+      .scam-date {
+        font-size: 0.9rem;
+      }
+      .admin-controls {
+        padding: 15px;
+      }
+      .admin-form-group {
+        width: 100%;
+      }
+      .logout-btn {
+        top: 10px;
+        right: 10px;
+        padding: 8px 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Scam Alert System - Admin Panel</h1>
+    <input type="text" id="search-box" placeholder="Search scams...">
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </header>
+
+  <div class="admin-controls">
+    <h2>Admin Actions</h2>
+    <div id="add-scam-section">
+      <h3>Add New Scam</h3>
+      <div class="admin-form-group">
+        <label for="add-scam-category">Category:</label>
+        <select id="add-scam-category">
+          <option value="online">Online Scams</option>
+          <option value="phone">Phone Scams</option>
+          <option value="dating">Dating Scams</option>
+        </select>
+      </div>
+      <div class="admin-form-group">
+        <label for="add-scam-title">Title:</label>
+        <input type="text" id="add-scam-title" placeholder="Scam Title">
+      </div>
+      <div class="admin-form-group">
+        <label for="add-scam-date">Date:</label>
+        <input type="date" id="add-scam-date">
+      </div>
+      <div class="admin-form-group">
+        <label for="add-scam-description">Description:</label>
+        <textarea id="add-scam-description" placeholder="Scam Description"></textarea>
+      </div>
+      <div class="admin-form-group">
+        <label for="add-scam-precautions">Precautions (comma-separated):</label>
+        <textarea id="add-scam-precautions" placeholder="Precaution 1, Precaution 2, ..."></textarea>
+      </div>
+      <div class="admin-form-group">
+        <label for="add-scam-links">Related Links (comma-separated):</label>
+        <textarea id="add-scam-links" placeholder="https://example.com, https://anotherlink.com"></textarea>
+      </div>
+      <button onclick="addScam()">Add Scam</button>
+    </div>
+
+    <div id="edit-delete-scam-section">
+      <h3>Edit/Delete Scam</h3>
+      <div class="admin-form-group">
+        <label for="select-scam">Select Scam to Edit/Delete:</label>
+        <select id="select-scam"></select>
+      </div>
+      <button onclick="editScamForm()">Edit Scam</button>
+      <button onclick="deleteScam()">Delete Scam</button>
+
+      <div id="edit-form" style="display:none;">
+        <h3>Edit Selected Scam</h3>
+        <div class="admin-form-group">
+          <label for="edit-scam-category">Category:</label>
+          <select id="edit-scam-category">
+            <option value="online">Online Scams</option>
+            <option value="phone">Phone Scams</option>
+            <option value="dating">Dating Scams</option>
+          </select>
+        </div>
+        <div class="admin-form-group">
+          <label for="edit-scam-title">Title:</label>
+          <input type="text" id="edit-scam-title" placeholder="Scam Title">
+        </div>
+        <div class="admin-form-group">
+          <label for="edit-scam-date">Date:</label>
+          <input type="date" id="edit-scam-date">
+        </div>
+        <div class="admin-form-group">
+          <label for="edit-scam-description">Description:</label>
+          <textarea id="edit-scam-description" placeholder="Scam Description"></textarea>
+        </div>
+        <div class="admin-form-group">
+          <label for="edit-scam-precautions">Precautions (comma-separated):</label>
+          <textarea id="edit-scam-precautions" placeholder="Precaution 1, Precaution 2, ..."></textarea>
+        </div>
+        <div class="admin-form-group">
+          <label for="edit-scam-links">Related Links (comma-separated):</label>
+          <textarea id="edit-scam-links" placeholder="https://example.com, https://anotherlink.com"></textarea>
+        </div>
+        <button onclick="updateScam()">Update Scam</button>
+        <button onclick="cancelEdit()">Cancel Edit</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="filters">
+    <button class="filter-btn active" onclick="filterScams('all')">All Scams</button>
+    <button class="filter-btn" onclick="filterScams('online')">Online Scams</button>
+    <button class="filter-btn" onclick="filterScams('phone')">Phone Scams</button>
+    <button class="filter-btn" onclick="filterScams('dating')">Dating Scams</button>
+  </div>
+
+  <div class="scams-list"></div>
+
+  <div id="scamModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">×</span>
+      <div id="modalDetails"></div>
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2025 Scam Alert System</p>
+  </footer>
+
+  <script>
+    if (!localStorage.getItem('token')) {
+      window.location.href = 'saslogin.html';
+    }
+
+    let scams = [];
+    let editingScamId = null;
+    let searchTimeout;
+
+    async function fetchScams() {
+      const res = await fetch('/api/scams', {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (res.ok) {
+        scams = await res.json();
+        populateScams();
+      } else {
+        alert('Session expired or access denied. Please log in again.');
+        logout();
+      }
+    }
+
+    function filterScams(category) {
+      document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelector(`.filter-btn[onclick="filterScams('${category}')"]`).classList.add('active');
+      populateScams(category);
+    }
+
+    function showModal(scam) {
+      const modal = document.getElementById('scamModal');
+      const modalContent = document.getElementById('modalDetails');
+      modalContent.innerHTML = `
+        <h2>${scam.title}</h2>
+        <p><strong>Date:</strong> ${formatDateForDisplay(scam.date)}</p>
+        <p><strong>Description:</strong> ${scam.description}</p>
+        <h3>Precautions:</h3>
+        <ul>${scam.precautions.map(p => `<li>${p}</li>`).join('')}</ul>
+        <h3>Related Links:</h3>
+        <ul>${scam.links.map(link => `<li><a href="${link}" target="_blank">${link}</a></li>`).join('')}</ul>
+      `;
+      modal.style.display = 'block';
+    }
+
+    function closeModal() {
+      document.getElementById('scamModal').style.display = 'none';
+    }
+
+    function populateScams(category = 'all') {
+      const scamsList = document.querySelector('.scams-list');
+      scamsList.innerHTML = '';
+      const filteredScams = category === 'all' ? scams : scams.filter(scam => scam.category === category);
+      const selectScamDropdown = document.getElementById('select-scam');
+      selectScamDropdown.innerHTML = '<option value="">Select Scam</option>';
+
+      filteredScams.forEach(scam => {
+        const scamDiv = document.createElement('div');
+        scamDiv.classList.add('scam');
+        scamDiv.innerHTML = `
+          <div class="scam-title">${scam.title}</div>
+          <div class="scam-date">${formatDateForDisplay(scam.date)}</div>
+        `;
+        scamDiv.onclick = () => showModal(scam);
+        scamsList.appendChild(scamDiv);
+
+        const option = document.createElement('option');
+        option.value = scam.id;
+        option.textContent = scam.title;
+        selectScamDropdown.appendChild(option);
+      });
+    }
+
+    function searchScams() {
+      const searchTerm = document.getElementById('search-box').value.trim().toLowerCase();
+      const scamsList = document.querySelector('.scams-list');
+      scamsList.innerHTML = '';
+
+      const filteredScams = scams.filter(scam =>
+        scam.title.toLowerCase().includes(searchTerm) ||
+        scam.category.toLowerCase().includes(searchTerm) ||
+        scam.description.toLowerCase().includes(searchTerm) ||
+        scam.precautions.some(p => p.toLowerCase().includes(searchTerm)) ||
+        scam.links.some(link => link.toLowerCase().includes(searchTerm))
+      );
+
+      if (filteredScams.length === 0) {
+        scamsList.innerHTML = '<p style="text-align:center; color:#bbbbbb;">No scams found.</p>';
+        return;
+      }
+
+      filteredScams.forEach(scam => {
+        const scamDiv = document.createElement('div');
+        scamDiv.classList.add('scam');
+        scamDiv.innerHTML = `
+          <div class="scam-title">${highlightMatch(scam.title, searchTerm)}</div>
+          <div class="scam-date">${formatDateForDisplay(scam.date)}</div>
+        `;
+        scamDiv.onclick = () => showModal(scam);
+        scamsList.appendChild(scamDiv);
+      });
+    }
+
+    function highlightMatch(text, term) {
+      if (!term) return text;
+      const regex = new RegExp(`(${term})`, 'gi');
+      return text.replace(regex, '<span style="background-color: #FFFF99; color: black;">$1</span>');
+    }
+
+    function isValidDate(dateString) {
+      const date = new Date(dateString);
+      return !isNaN(date.getTime());
+    }
+
+    function formatDateForStorage(dateString) {
+      const [year, month, day] = dateString.split('-');
+      return `${month}/${day}/${year}`;
+    }
+
+    function formatDateForInput(dateString) {
+      const [month, day, year] = dateString.split('/');
+      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    }
+
+    function formatDateForDisplay(dateString) {
+      const [month, day, year] = dateString.split('/');
+      return new Date(`${year}-${month}-${day}`).toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    }
+
+    async function addScam() {
+      const category = document.getElementById('add-scam-category').value;
+      const title = document.getElementById('add-scam-title').value;
+      const date = document.getElementById('add-scam-date').value;
+      const description = document.getElementById('add-scam-description').value;
+      const precautions = document.getElementById('add-scam-precautions').value.split(',').map(p => p.trim());
+      const links = document.getElementById('add-scam-links').value.split(',').map(link => link.trim());
+
+      if (!title || !date || !description || precautions.length === 0) {
+        alert('Please fill in all required scam details.');
+        return;
+      }
+
+      if (!isValidDate(date)) {
+        alert('Please select a valid date.');
+        return;
+      }
+
+      const formattedDate = formatDateForStorage(date);
+      const scamData = { category, title, date: formattedDate, description, precautions, links };
+
+      const res = await fetch('/api/scams', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(scamData)
+      });
+      if (res.ok) {
+        alert('Scam added successfully!');
+        fetchScams();
+        clearAddScamForm();
+      } else {
+        alert('Error adding scam');
+      }
+    }
+
+    function clearAddScamForm() {
+      document.getElementById('add-scam-title').value = '';
+      document.getElementById('add-scam-date').value = '';
+      document.getElementById('add-scam-description').value = '';
+      document.getElementById('add-scam-precautions').value = '';
+      document.getElementById('add-scam-links').value = '';
+    }
+
+    async function deleteScam() {
+      const scamIdToDelete = document.getElementById('select-scam').value;
+      if (!scamIdToDelete) {
+        alert('Please select a scam to delete.');
+        return;
+      }
+      if (confirm('Are you sure you want to delete this scam?')) {
+        const res = await fetch(`/api/scams/${scamIdToDelete}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        if (res.ok) {
+          alert('Scam deleted successfully!');
+          fetchScams();
+        } else {
+          alert('Error deleting scam');
+        }
+      }
+    }
+
+    function editScamForm() {
+      editingScamId = document.getElementById('select-scam').value;
+      if (!editingScamId) {
+        alert('Please select a scam to edit.');
+        return;
+      }
+      const scamToEdit = scams.find(scam => scam.id == editingScamId);
+      if (scamToEdit) {
+        document.getElementById('edit-scam-category').value = scamToEdit.category;
+        document.getElementById('edit-scam-title').value = scamToEdit.title;
+        document.getElementById('edit-scam-date').value = formatDateForInput(scamToEdit.date);
+        document.getElementById('edit-scam-description').value = scamToEdit.description;
+        document.getElementById('edit-scam-precautions').value = scamToEdit.precautions.join(', ');
+        document.getElementById('edit-scam-links').value = scamToEdit.links.join(', ');
+        document.getElementById('edit-form').style.display = 'block';
+      }
+    }
+
+    async function updateScam() {
+      if (!editingScamId) return;
+      const category = document.getElementById('edit-scam-category').value;
+      const title = document.getElementById('edit-scam-title').value;
+      const date = document.getElementById('edit-scam-date').value;
+      const description = document.getElementById('edit-scam-description').value;
+      const precautions = document.getElementById('edit-scam-precautions').value.split(',').map(p => p.trim());
+      const links = document.getElementById('edit-scam-links').value.split(',').map(link => link.trim());
+
+      if (!title || !date || !description || precautions.length === 0) {
+        alert('Please fill in all required scam details.');
+        return;
+      }
+
+      if (!isValidDate(date)) {
+        alert('Please select a valid date.');
+        return;
+      }
+
+      const formattedDate = formatDateForStorage(date);
+      const scamData = { category, title, date: formattedDate, description, precautions, links };
+
+      const res = await fetch(`/api/scams/${editingScamId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(scamData)
+      });
+      if (res.ok) {
+        alert('Scam updated successfully!');
+        fetchScams();
+        cancelEdit();
+      } else {
+        alert('Error updating scam');
+      }
+    }
+
+    function cancelEdit() {
+      document.getElementById('edit-form').style.display = 'none';
+      editingScamId = null;
+      clearEditScamForm();
+    }
+
+    function clearEditScamForm() {
+      document.getElementById('edit-scam-category').value = 'online';
+      document.getElementById('edit-scam-title').value = '';
+      document.getElementById('edit-scam-date').value = '';
+      document.getElementById('edit-scam-description').value = '';
+      document.getElementById('edit-scam-precautions').value = '';
+      document.getElementById('edit-scam-links').value = '';
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      window.location.href = 'saslogin.html';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchScams();
+      document.getElementById('search-box').addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(searchScams, 300);
+      });
+    });
+  </script>
+</body>
+</html>

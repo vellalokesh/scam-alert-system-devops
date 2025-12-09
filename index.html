@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login & Register</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+    body {
+      background: #101010;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      gap: 30px;
+    }
+    .container {
+      background: #2a2a2a;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      width: 500px;
+      height: 300px;
+      text-align: center;
+    }
+    h2 {
+      margin-bottom: 20px;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: none;
+      background: #333;
+      color: white;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 5px;
+      background: #FF4081;
+      color: white;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:disabled {
+      background: #888;
+      cursor: not-allowed;
+    }
+    button:hover:not(:disabled) {
+      background: #d9366f;
+    }
+    .toggle, .forgot-password {
+      margin-top: 10px;
+      cursor: pointer;
+      color: #FF4081;
+      font-size: 14px;
+    }
+    @media (max-width: 600px) {
+      body {
+        flex-direction: column;
+        height: auto;
+        padding: 20px;
+      }
+      .container {
+        width: 100%;
+        padding: 20px;
+        height: auto;
+      }
+      h2 { font-size: 20px; }
+      input { font-size: 14px; padding: 8px; }
+      button { font-size: 14px; padding: 10px; }
+      .toggle, .forgot-password { font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="authContainer">
+    <h2 id="formTitle">Login</h2>
+    <input type="text" id="username" placeholder="Username" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <button onclick="handleAuth()">Login</button>
+    <p class="forgot-password" onclick="forgotPassword()">Forgot Password?</p>
+    <p class="toggle" onclick="toggleForm()">Don't have an account? Register</p>
+  </div>
+  <div class="container" style="display: none;" id="resetContainer">
+    <h2>Reset Password</h2>
+    <input type="email" id="resetEmail" placeholder="Enter registered email" required>
+    <button onclick="sendOTP()">Send OTP</button>
+    <p class="toggle" onclick="showLogin()">Back to Login</p>
+  </div>
+  <div class="container" style="display: none;" id="otpContainer">
+    <h2>Enter OTP</h2>
+    <input type="text" id="otpInput" placeholder="Enter OTP" required>
+    <button onclick="verifyOTP()">Verify OTP</button>
+  </div>
+  <div class="container" style="display: none;" id="newPasswordContainer">
+    <h2>Set New Password</h2>
+    <input type="password" id="newPassword" placeholder="Enter new password" required>
+    <button onclick="resetPassword()">Reset Password</button>
+  </div>
+  <div class="container">
+    <h2>Admin Login</h2>
+    <input type="text" id="adminusername" placeholder="Username" required>
+    <input type="password" id="adminpassword" placeholder="Password" required>
+    <button onclick="handleAdminLogin()">Login</button>
+  </div>
+
+  <script>
+    let isLogin = true;
+
+    function toggleForm() {
+      isLogin = !isLogin;
+      document.getElementById('authContainer').innerHTML = isLogin
+        ? `<h2 id="formTitle">Login</h2>
+           <input type="text" id="username" placeholder="Username" required>
+           <input type="password" id="password" placeholder="Password" required>
+           <button onclick="handleAuth()">Login</button>
+           <p class="forgot-password" onclick="forgotPassword()">Forgot Password?</p>
+           <p class="toggle" onclick="toggleForm()">Don't have an account? Register</p>`
+        : `<h2>Register</h2>
+           <input type="text" id="username" placeholder="Username" required>
+           <input type="email" id="email" placeholder="Email" required>
+           <input type="password" id="password" placeholder="Password" required>
+           <button onclick="handleAuth()">Register</button>
+           <p class="toggle" onclick="toggleForm()">Already have an account? Login</p>`;
+    }
+
+    async function handleAuth() {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      if (!username || !password || password.length < 6) {
+        alert('Username and password (min 6 characters) are required');
+        return;
+      }
+
+      if (isLogin) {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          localStorage.setItem('token', data.token);
+          alert('Login successful');
+          window.location.href = 'homepage.html';
+        } else {
+          alert(data.message);
+        }
+      } else {
+        const email = document.getElementById('email').value;
+        if (!email || !email.includes('@')) {
+          alert('Please enter a valid email');
+          return;
+        }
+        const res = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, email, password })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert(data.message);
+          toggleForm();
+        } else {
+          alert(data.message);
+        }
+      }
+    }
+
+    async function handleAdminLogin() {
+      const username = document.getElementById('adminusername').value;
+      const password = document.getElementById('adminpassword').value;
+
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      const data = await res.json();
+      if (res.ok && data.role === 'admin') {
+        localStorage.setItem('token', data.token);
+        alert('Admin login successful');
+        window.location.href = 'adminhome.html';
+      } else {
+        alert(data.message || 'Admin access required');
+      }
+    }
+
+    function forgotPassword() {
+      document.getElementById('authContainer').style.display = 'none';
+      document.getElementById('resetContainer').style.display = 'block';
+    }
+
+    async function sendOTP() {
+      const email = document.getElementById('resetEmail').value;
+      if (!email || !email.includes('@')) {
+        alert('Please enter a valid email');
+        return;
+      }
+      const res = await fetch('/api/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert(data.message);
+        document.getElementById('resetContainer').style.display = 'none';
+        document.getElementById('otpContainer').style.display = 'block';
+      } else {
+        alert(data.message);
+      }
+    }
+
+    async function verifyOTP() {
+      const otp = document.getElementById('otpInput').value;
+      if (otp) {
+        document.getElementById('otpContainer').style.display = 'none';
+        document.getElementById('newPasswordContainer').style.display = 'block';
+      } else {
+        alert('Please enter OTP');
+      }
+    }
+
+    async function resetPassword() {
+      const newPassword = document.getElementById('newPassword').value;
+      const email = document.getElementById('resetEmail').value;
+      const otp = document.getElementById('otpInput').value;
+
+      if (!newPassword || newPassword.length < 6) {
+        alert('Please enter a password (min 6 characters)');
+        return;
+      }
+
+      const res = await fetch('/api/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp, newPassword })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert(data.message);
+        showLogin();
+      } else {
+        alert(data.message);
+      }
+    }
+
+    function showLogin() {
+      document.getElementById('resetContainer').style.display = 'none';
+      document.getElementById('otpContainer').style.display = 'none';
+      document.getElementById('newPasswordContainer').style.display = 'none';
+      document.getElementById('authContainer').style.display = 'block';
+    }
+
+    document.querySelectorAll('input').forEach(input => {
+      input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          if (input.id === 'username' || input.id === 'password') handleAuth();
+          if (input.id === 'adminusername' || input.id === 'adminpassword') handleAdminLogin();
+          if (input.id === 'resetEmail') sendOTP();
+          if (input.id === 'otpInput') verifyOTP();
+          if (input.id === 'newPassword') resetPassword();
+        }
+      });
+    });
+	
+	localstoage();
+  </script>
+</body>
+</html>

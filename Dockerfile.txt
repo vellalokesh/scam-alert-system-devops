@@ -1,0 +1,11 @@
+FROM nginx:alpine
+
+WORKDIR /usr/share/nginx/html
+
+# Remove default nginx files
+RUN rm -rf ./*
+
+# Copy ALL your files (html, images, etc.)
+COPY . .
+
+EXPOSE 80
