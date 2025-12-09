@@ -5,7 +5,8 @@ WORKDIR /usr/share/nginx/html
 # Remove default nginx files
 RUN rm -rf ./*
 
-# Copy ALL your files (html, images, etc.)
+# Copy all project files (HTML, JS, images, etc.)
 COPY . .
 
+# Expose HTTP port
 EXPOSE 80
